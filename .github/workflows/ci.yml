@@ -27,11 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # NOTE: Do NOT use `cache: pnpm` here because it requires pnpm to exist during setup-node.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: "pnpm"
 
       - name: Enable Corepack + Activate pnpm
         run: |
@@ -39,18 +39,39 @@ jobs:
           corepack prepare pnpm@9.12.3 --activate
           pnpm --version
 
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # -----------------------------
+      # Typecheck
+      # -----------------------------
       - name: Typecheck (API)
         run: pnpm --filter @app/api exec tsc -p apps/api/tsconfig.json --noEmit
 
       - name: Typecheck (Web)
         run: pnpm --filter @app/web exec tsc -p apps/web/tsconfig.json --noEmit
 
+      # -----------------------------
+      # Tests
+      # -----------------------------
       - name: Test (API)
         run: pnpm --filter @app/api -if-present test
 
+      # -----------------------------
+      # Builds
+      # -----------------------------
       - name: Build (Shared)
         run: pnpm --filter @repo/shared -if-present build
 
@@ -60,6 +81,9 @@ jobs:
       - name: Build (Web)
         run: pnpm --filter @app/web build
 
+      # -----------------------------
+      # Docker sanity builds (optional)
+      # -----------------------------
       - name: Docker build API (sanity)
         run: docker build -f Dockerfile.api -t mern-api:ci .
 
