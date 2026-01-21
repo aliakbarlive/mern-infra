@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build + Typecheck + Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "pnpm"
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Optional: workspace-wide quick validation
+      - name: Typecheck (API)
+        run: pnpm --filter @app/api exec tsc -p apps/api/tsconfig.json --noEmit
+
+      - name: Typecheck (Web)
+        run: pnpm --filter @app/web exec tsc -p apps/web/tsconfig.json --noEmit
+
+      - name: Test (API)
+        run: pnpm --filter @app/api -if-present test
+
+      - name: Build (Shared)
+        run: pnpm --filter @repo/shared -if-present build
+
+      - name: Build (API)
+        run: pnpm --filter @app/api build
+
+      - name: Build (Web)
+        run: pnpm --filter @app/web build
+
+      # Optional Docker validation (catches Dockerfile issues early)
+      - name: Docker build API (sanity)
+        run: docker build -f Dockerfile.api -t mern-api:ci .
+
+      - name: Docker build Web (sanity)
+        run: docker build -f Dockerfile.web -t mern-web:ci .
