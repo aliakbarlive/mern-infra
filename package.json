@@ -1,0 +1,9 @@
+{
+  "name": "mern-social-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @app/api dev",
+    "dev:web": "pnpm --filter @app/web dev"
+  }
+}
