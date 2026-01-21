@@ -58,10 +58,10 @@ jobs:
       # Typecheck
       # -----------------------------
       - name: Typecheck (API)
-        run: pnpm --filter @app/api exec tsc -p apps/api/tsconfig.json --noEmit
+        run: pnpm --filter @app/api exec tsc -p tsconfig.json --noEmit
 
       - name: Typecheck (Web)
-        run: pnpm --filter @app/web exec tsc -p apps/web/tsconfig.json --noEmit
+        run: pnpm --filter @app/web exec tsc -p tsconfig.json --noEmit
 
       # -----------------------------
       # Tests
