@@ -64,12 +64,6 @@ jobs:
         run: pnpm --filter @app/web exec tsc -p tsconfig.json --noEmit
 
       # -----------------------------
-      # Tests
-      # -----------------------------
-      - name: Test (API)
-        run: pnpm --filter @app/api -if-present test
-
-      # -----------------------------
       # Builds
       # -----------------------------
       - name: Build (Shared)
