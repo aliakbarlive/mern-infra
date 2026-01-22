@@ -7,13 +7,13 @@ export const logger = pino({
   transport: isProd
     ? undefined
     : {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-        },
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
       },
+    },
 });
 
 export const requestLogger = pinoHttp({
-  logger,
+  logger: logger as any,
 });
