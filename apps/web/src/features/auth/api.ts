@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { api, getErrorMessage } from '../../lib/api';
 import { useAuthStore, User } from '../../store/authStore';
 
@@ -19,25 +20,33 @@ export function useMeQuery(enabled: boolean = true) {
   const setUser = useAuthStore((s) => s.setUser);
   const setStatus = useAuthStore((s) => s.setStatus);
 
-  return useQuery<AuthResponse, unknown>({
-    queryKey: ['auth', 'me'],
+  const query = useQuery<AuthResponse>({
+    queryKey: ["auth", "me"],
     queryFn: async () => {
-      const res = await api.get<AuthResponse>('/auth/me');
+      const res = await api.get<AuthResponse>("/auth/me");
       return res.data;
     },
     enabled,
     retry: false,
-    onSuccess: (data:any) => {
-      console.log('data', data)
-      setUser(data.user);
-      setStatus('authenticated');
-    },
-    onError: () => {
-      setUser(null);
-      setStatus('unauthenticated');
-    },
   });
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    if (query.isSuccess) {
+      setUser(query.data.user);
+      setStatus("authenticated");
+    }
+
+    if (query.isError) {
+      setUser(null);
+      setStatus("unauthenticated");
+    }
+  }, [enabled, query.isSuccess, query.isError, query.data, setUser, setStatus]);
+
+  return query;
 }
+
 
 export function useLoginMutation() {
   const setUser = useAuthStore((s) => s.setUser);
