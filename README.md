@@ -126,10 +126,6 @@ The GitHub Actions workflow (`.github/workflows/ci.yml`) installs dependencies, 
 
 Authentication currently supports register, login, logout, and fetching the current user (`/me`), using a JWT access token stored in an httpOnly cookie. The user model includes a `role` field (`user`, `admin`, `moderator`), and the `requireAuth` middleware attaches the authenticated user (including role) to the request. RBAC appears to be part of the application direction, but should be expanded with complete role and permission enforcement, since no role-restriction middleware is currently applied to routes.
 
-## Screenshots
-
-Screenshots can be added later after running the application locally.
-
 ## Roadmap
 
 - Add role-based authorization middleware to enforce permissions per route, not just authentication
@@ -137,7 +133,3 @@ Screenshots can be added later after running the application locally.
 - Build out the posts, comments, reports, and admin modules referenced in `app.ts`
 - Replace the placeholder Feed and Admin pages with real UI and data
 - Keep .env.example files in sync as configuration changes
-
-## License
-
-No license file is currently included in this repository.
